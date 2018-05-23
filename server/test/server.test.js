@@ -12,7 +12,7 @@ describe('POST/Todo', () => {
 	it('Should create a new todo', (done) => {
 		let text = 'Test a super test';
 		request(app)
-			.post('/todo')
+			.post('/todos')
 			.send({text})
 			.expect(200)
 			.expect((res) => {
@@ -35,7 +35,7 @@ describe('POST/Todo', () => {
 
 	it('Should not create a todo', (done) => {
 		request(app)
-			.post('/todo')
+			.post('/todos')
 			.send({})
 			.expect(400)
 			.end((err, res) => {

@@ -20,11 +20,10 @@ app.post('/user', (req, res) => {
 	});
 });
 
-app.post('/todo', (req, res) => {
+app.post('/todos', (req, res) => {
 	let newTodo = new Todo({
 		text: req.body.text
 	});
-	console.log(req.body);
 
 	newTodo.save().then((response) => {
 		res.send(response);
@@ -33,9 +32,17 @@ app.post('/todo', (req, res) => {
 	});
 });
 
+app.get('/todos', (req, res) => {
+	Todo.find().then((todos) => {
+		res.send(todos);
+	}, (err) => {
+		res.status(400).send(err);
+	});
+});
+
 
 app.listen(3000, () => {
 	console.log("Listening at port 3000");
 });
 
-module.exports={app};
+module.exports = {app};
