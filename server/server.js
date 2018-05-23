@@ -1,6 +1,7 @@
-let express = require('express');
-let bodyParser = require('body-parser');
-let {ObjectId} = require('mongodb');
+const _ = require('lodash');
+const express = require('express');
+const bodyParser = require('body-parser');
+const {ObjectId} = require('mongodb');
 
 let {mongoose} = require('./db/mongoose');
 let {User} = require('./models/User');
@@ -18,6 +19,21 @@ app.post('/user', (req, res) => {
 		res.send(response);
 	}, (e) => {
 		res.status(400).send(e);
+	});
+});
+
+app.get('/user/:id', (req, res) => {
+	let id = req.params.id;
+	if (!ObjectId.isValid(id)) {
+		return res.status(404).send();
+	}
+	User.findById(id).then((user) => {
+		if (!user) {
+			return res.status(404).send();
+		}
+		res.send(user);
+	}).catch((e) => {
+		return res.status(400).send();
 	});
 });
 
@@ -41,18 +57,57 @@ app.get('/todos', (req, res) => {
 	});
 });
 
-app.get('/user/:id', (req, res) => {
+app.get('/todos/:id', (req, res) => {
 	let id = req.params.id;
 	if (!ObjectId.isValid(id)) {
 		return res.status(404).send();
 	}
-	User.findById(id).then((user) => {
-		if (!user) {
+	Todo.findById(id).then((todo) => {
+		if (!todo) {
 			return res.status(404).send();
 		}
-		res.send(user);
+		res.send(todo);
 	}).catch((e) => {
 		return res.status(400).send();
+	});
+});
+
+app.delete('/todos/:id', (req, res) => {
+	let id = req.params.id;
+	if (!ObjectId.isValid(id)) {
+		return res.status(404).send();
+	}
+	Todo.findByIdAndRemove(id).then((todo) => {
+		if (!todo) {
+			return res.status(404).send();
+		}
+		res.send();
+	}).catch((e) => {
+		res.status(400).send();
+	});
+});
+
+app.patch('/todos/:id', (req, res) => {
+	let id = req.params.id;
+	let body = _.pick(req.body, ['text', 'completed']);
+	if (!ObjectId.isValid(id)) {
+		return res.status(404).send();
+	}
+
+	if (_.isBoolean(body.completed) && body.completed) {
+		body.completedAt = new Date().getTime();
+	} else {
+		body.completed = false;
+		body.completedAt = null;
+	}
+
+	Todo.findByIdAndUpdate(id, {$set: body}, {new: true}).then((todo) => {
+		if (!todo) {
+			return res.status(404).send();
+		}
+		res.send({todo});
+	}).catch((e) => {
+		res.status(400).send();
 	});
 });
 
