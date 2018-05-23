@@ -1,3 +1,4 @@
+require('./../config/config');
 const _ = require('lodash');
 const express = require('express');
 const bodyParser = require('body-parser');
@@ -112,8 +113,8 @@ app.patch('/todos/:id', (req, res) => {
 });
 
 
-app.listen(3000, () => {
-	console.log("Listening at port 3000");
+app.listen(process.env.port, () => {
+	console.log(`Listening at port ${process.env.port}`);
 });
 
 module.exports = {app};
