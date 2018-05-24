@@ -5,9 +5,9 @@ const bodyParser = require('body-parser');
 const {ObjectId} = require('mongodb');
 
 let {mongoose} = require('./db/mongoose');
-let {User} = require('./models/User');
+let {User} = require('./models/user');
 let {Todo} = require('./models/todo');
-
+let { authenticate } = require('./middleware/authenticate');
 let app = express();
 
 app.use(bodyParser.json());
@@ -28,6 +28,10 @@ app.post('/user', (req, res) => {
 	});
 });
 
+app.get('/user/me',authenticate, (req, res) => {
+	res.send(req.user);
+});
+
 app.get('/user/:id', (req, res) => {
 	let id = req.params.id;
 	if (!ObjectId.isValid(id)) {
@@ -39,7 +43,7 @@ app.get('/user/:id', (req, res) => {
 		}
 		res.send(user);
 	}).catch((e) => {
-		return res.status(400).send();
+		return res.status(400).send(e);
 	});
 });
 
