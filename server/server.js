@@ -13,12 +13,17 @@ let app = express();
 app.use(bodyParser.json());
 
 app.post('/user', (req, res) => {
-	let newUser = new User({
-		email: req.body.email
-	});
-	newUser.save().then((response) => {
-		res.send(response);
-	}, (e) => {
+
+	let body = _.pick(req.body, ['email', 'password']);
+
+	let newUser = new User(body);
+
+	newUser.save().then(() => {
+		return newUser.generateAuthToken();
+	}).then((token) => {
+		res.header('x-auth', token).send(newUser);
+	}).catch((e) => {
+		console.log(e);
 		res.status(400).send(e);
 	});
 });
