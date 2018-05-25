@@ -7,7 +7,7 @@ const {ObjectId} = require('mongodb');
 let {mongoose} = require('./db/mongoose');
 let {User} = require('./models/user');
 let {Todo} = require('./models/todo');
-let { authenticate } = require('./middleware/authenticate');
+let {authenticate} = require('./middleware/authenticate');
 let app = express();
 
 app.use(bodyParser.json());
@@ -28,8 +28,34 @@ app.post('/user', (req, res) => {
 	});
 });
 
-app.get('/user/me',authenticate, (req, res) => {
+
+app.get('/user/me', authenticate, (req, res) => {
+	console.log(req.token);
 	res.send(req.user);
+});
+
+app.post('/user/login', (req, res) => {
+	let body = _.pick(req.body, ['email', 'password']);
+
+	User.findByCredential(body.email, body.password).then((user) => {
+		if (!user) {
+			res.status(400).send();
+		}
+		return user.generateAuthToken().then((token) => {
+			res.header('x-auth', token).send(user);
+		});
+	}).catch((e) => {
+		res.status(400).send();
+	});
+});
+
+app.delete('/user/logout', authenticate, (req, res) => {
+	req.user.removeToken(req.token).then(() => {
+		console.log(res);
+		res.status(200).send();
+	}, (e) => {
+		res.status(400).send();
+	});
 });
 
 app.get('/user/:id', (req, res) => {
